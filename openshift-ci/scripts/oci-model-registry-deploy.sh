@@ -9,6 +9,7 @@ MODEL_REGISTRY_SAMPLE_MANIFEST="openshift-ci/resources/model-registry-operator/m
 OPENDATAHUB_CRDS="datascienceclusters.datasciencecluster.opendatahub.io,dscinitializations.dscinitialization.opendatahub.io,featuretrackers.features.opendatahub.io"
 DATA_SCIENCE_CLUSTER_CRDS="acceleratorprofiles.dashboard.opendatahub.io,datasciencepipelinesapplications.datasciencepipelinesapplications.opendatahub.io,odhapplications.dashboard.opendatahub.io,odhdashboardconfigs.opendatahub.io,odhdocuments.dashboard.opendatahub.io,trustyaiservices.trustyai.opendatahub.io"
 MODEL_REGISTRY_CRDS="modelregistries.modelregistry.opendatahub.io"
+DEFAULT_NAMESPACE="opendatahub"
 source "openshift-ci/scripts/colour_text_variables.sh"
 
 # Function to monitor CRDS creation and deployment.
@@ -75,7 +76,7 @@ deploy_and_wait() {
     
     echo "Deploying $resource_name from $manifest..."
 
-    if oc apply -f $manifest --wait=true --timeout=300s; then
+    if oc apply -f $manifest -n "${DEFAULT_NAMESPACE}" --wait=true --timeout=300s; then
         echo -e "${GREEN}✔ Success:${NC} Deployment of $resource_name succeeded."
     else
         echo -e "${RED}X Error:${NC} Deployment of $resource_name failed or timed out." >&2
@@ -198,11 +199,11 @@ run_api_tests() {
 
 # Run the deployment tests.
 run_deployment_tests() {
-    check_deployment_availability default model-registry-db
-    check_deployment_availability default modelregistry-sample
-    check_pod_status default "-l name=model-registry-db" 1
-    check_pod_status default "-l app=modelregistry-sample" 2
-    check_route_status "default" "modelregistry-sample-http"
+    check_deployment_availability "${DEFAULT_NAMESPACE}" model-registry-db
+    check_deployment_availability "${DEFAULT_NAMESPACE}" modelregistry-sample
+    check_pod_status "${DEFAULT_NAMESPACE}" "-l name=model-registry-db" 1
+    check_pod_status "${DEFAULT_NAMESPACE}" "-l app=modelregistry-sample" 2
+    check_route_status "${DEFAULT_NAMESPACE}" "modelregistry-sample-http"
 }
 
 # Main function for orchestrating deployments
